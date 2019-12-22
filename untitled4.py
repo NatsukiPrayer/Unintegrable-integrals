@@ -18,16 +18,19 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from tkinter.ttk import Combobox
 from tkinter import messagebox
+from tkinter import filedialog
 import math as m
 from matplotlib import style
 import matplotlib.animation  as animation
 from tkinter import scrolledtext
 import scipy as scp
-import scipy.integrate as integrate
+from scipy import integrate
 import scipy.special as special
+import os
 style.use('ggplot')
 
-
+funnc = lambda x: x**2 * m.sin(5*x)
+funncc = lambda x: x**2 * m.cos(5*x)
 '''
 def Graphic():
     graph_window = Tk()
@@ -139,64 +142,130 @@ def enter_clicked(border_l, border_u, func, parts):
     bords=[Sum, Sum_par, real, fuc, l, u, f_values, f_par_values]
     return bords
 
-def proverka(l):
+def proverka(border_l, border_u, func, parts):
     test = Tk()
-    result = integrate.quad(lambda x: x**2 * m.sin(5*x), 0, 4.5)
-    print(result)
-    if not l:
-        messagebox.showerror('Ошибка', 'Неверный формат проверяемых данных!')
-    elif len(l[0]) > 16:
-        string = 'Вывод сокращён до суммы методов из-за большего числа разбиений\n' + 'Истинное значение интеграла:' + l[3] +'='
-        if l[3] == 'sin(5x)':
-            cos_l = round(m.cos(5*l[4])/5, 4)
-            cos_u = round(m.cos(5*l[5])/5, 4)
-            string+='-cos(5x)/5, верхняя граница= ' + str(l[4]) + ', нижняя граница= ' + str(l[5]) +'\nПодставляя имеем: ' + str(cos_u) + ' - ' + str(cos_l) + ' = ' + str(cos_u-cos_l) + '\n'
-        elif l[3] == 'x^2':
-            x_u = round(l[5]**3/3, 4)
-            x_l = round(l[4]**3/3, 4)
-            string+='x^3/3, верхняя граница= ' + str(l[4]) + ', нижняя граница= ' + str(l[5]) +'\nПодставляя имеем: ' + str(x_u)+ ' - ' + str(x_l) + ' = ' + str(x_u - x_l) + '\n'
-        Itr = 'Для метода трапеций: Itr = ' + str(l[0][len(l[0])-1])
-        Ipar = 'Для метода парабол: Itr = ' + str(l[1][len(l[1])-1])
-        t = tk.scrolledtext.ScrolledText(test, height = 40, width = len(Itr))
-        test.geometry('1440x280')
-        t.insert(1.0, string)
-        t.insert(5.0, Itr)
-        t.insert(7.0, Ipar)
-        t.grid(row=0, column=0)
-    else:
-        string = 'Истинное значение интеграла:' + l[3] +'='
-        if l[3] == 'sin(5x)':
-            cos_l = round(m.cos(5*l[4])/5, 4)
-            cos_u = round(m.cos(5*l[5])/5, 4)
-            string+='-cos(5x)/5, верхняя граница= ' + str(l[4]) + ', нижняя граница= ' + str(l[5]) +'\nПодставляя имеем: ' + str(cos_u) + ' - ' + str(cos_l) + ' = ' + str(cos_u-cos_l) + '\n'
-        elif l[3] == 'x^2':
-            x_u = round(l[5]**3/3, 4)
-            x_l = round(l[4]**3/3, 4)
-            string+='x^3/3, верхняя граница= ' + str(l[4]) + ', нижняя граница= ' + str(l[5]) +'\nПодставляя имеем: ' + str(x_u)+ ' - ' + str(x_l) + ' = ' + str(x_u - x_l) + '\n'
-        Itr = 'Для метода трапеций:'
-        for i in range(0, len(l[0])):
-            if i == 0:
-                Itr+=str(round(l[6][i][0], 4)) + ' +'
-            elif i!= len(l[0])-1:
-                Itr+=' ' + str(round(l[6][i][0],4)) + ' +'
-            else:
-                Itr+=' ' + str(round(l[6][i][0],4)) + '= ' + str(round(l[0][i], 4)) 
-        Ipar = 'Для метода парабол:'
-        for i in range(0, len(l[1])):
-            if i == 0:
-                Ipar+=str(round(l[7][i][0], 4)) + ' +'
-            elif i!= len(l[1])-1:
-                Ipar+=' ' + str(round(l[7][i][0],4)) + ' +'
-            else:
-                Ipar+=' ' + str(round(l[7][i][0],4)) + '= ' + str(round(l[1][i], 4)) 
-        t = tk.scrolledtext.ScrolledText(test, height = 40, width = len(Itr))
-        test.geometry('1440x280')
-        t.insert(1.0, string)
-        t.insert(5.0, Itr)
-        t.insert(7.0, Ipar)
-        t.grid(row=0, column=0)
-        #string = 'Проверка' + str(l[0]) + '---' + str(l[1]) + '000  ' + str(l)
-        #messagebox.showinfo('Проверка', string)
+    try:
+        n = parts.get().split(',')
+        l = float(border_l.get())
+        u = float(border_u.get())
+        fuc = func.get()
+        for i in range (0, len(n)):
+            if int(n[i]) < 1:
+                raise  Exception
+    except ValueError:
+        messagebox.showerror('Ошибка','Неверный формат ввода!')
+        return
+    except Exception:
+        messagebox.showerror('Ошибка','Невозможное колиество разбиений!')
+        return
+    if not parts.get():
+        messagebox.showerror('Ошибка','Вы не ввели количество разбиений!')
+        return
+    if not func.get():
+        messagebox.showerror("Ошибка", "Вы не выбрали функцию!")
+        return
+    n_new = []
+    for i in range(0, len(n)):
+        n_new.append(int(n[i]))
+    n_new.sort()
+    f_val_t=[]
+    f_val_p=[]
+    F_P = []
+    F_T = []
+    Par_meth = []
+    Trap_meth = []
+    for j in range (0, len(n)):
+        Summ = 0
+        Summ_par = 0
+        h=(u - l)/n_new[j]
+        print(h)
+        if fuc == 'x^2sin(5x)':
+            real_real = integrate.quad(funnc, l, u)
+            for i in range (0, n_new[j]):
+                if i == 0:
+                    pair = ((sin_f(l) + sin_f(u))*h)/2
+                    f_val_t.append(pair)
+                    Summ+=pair
+                else:
+                    pair=sin_f(l+(i*h))*h
+                    f_val_t.append(pair)
+                    Summ+=pair
+            
+            for i in range (0, n_new[j]):
+                if i == 0:
+                    pair = (sin_f(l) + sin_f(u))*h/3
+                    f_val_p.append(pair)
+                    Summ_par+=pair
+                elif (i%2) == 1:
+                    pair=sin_f(l+(i*h))*4*h/3
+                    f_val_p.append(pair)
+                    Summ_par+=pair
+                elif (i%2) == 0:
+                    pair=sin_f(l+(i*h))*2*h/3       
+                    f_val_p.append(pair)
+                    Summ_par+=pair
+        elif fuc == 'x^2cos(5x)':
+            real_real = integrate.quad(funncc, l, u)
+            for i in range (0, n_new[j]):
+                if i == 0:
+                    pair = ((cos_f(l) + cos_f(u))*h)/2
+                    f_val_t.append(pair)
+                    Summ+=pair
+                else:
+                    pair=cos_f(l+(i*h))*h
+                    f_val_t.append(pair)
+                    Summ+=pair
+            
+            for i in range (0, n_new[j]):
+                if i == 0:
+                    pair = (cos_f(l) + cos_f(u))*h/3
+                    f_val_p.append(pair)
+                    Summ_par+=pair
+                elif (i%2) == 1:
+                    pair=cos_f(l+(i*h))*4*h/3
+                    f_val_p.append(pair)                        
+                    Summ_par+=pair
+                elif (i%2) == 0:
+                    pair=cos_f(l+(i*h))*2*h/3       
+                    f_val_p.append(pair)                    
+                    Summ_par+=pair
+        Par_meth.append(Summ_par)
+        Trap_meth.append(Summ)
+        F_P.append(f_val_p)
+        F_T.append(f_val_t)
+    t = tk.scrolledtext.ScrolledText(test, height = 50, width = 50)
+    string = 'Истинное значение интеграла:' + str(real_real[0]) + '\n' 
+    c = 28
+    t.insert(1.0, string)
+    for i in range(0, len(n_new)):
+        if n_new[i] > 0:
+            partit = 'n = ' + str(n_new[i]) +'\n'
+            Itr = 'Itr = ' + str(round(Trap_meth[i],4)) + '\n'
+            Ipar = 'Ipr = ' + str(round(Par_meth[i],4)) + '\n'
+            test.geometry('360x280')
+            t.insert(INSERT, partit)
+            t.insert(c+2.0, Itr)
+            t.insert(c+4.0, Ipar)
+            c+=2
+    """else:
+            partit = 'n = ' + str(n_new[i]) + '\n'
+            temp = ''
+            temp_p =''
+            for j in range (0, len(F_P[i])):
+                if j != len(F_P[i])-1:
+                    temp += str(round(F_T[i][j],4)) + ' + '
+                    temp_p += str(round(F_P[i][j],4)) + ' + '
+                else:
+                    temp+=str(round(F_T[i][j],4))
+                    temp_p+=str(round(F_P[i][j],4))
+            Itr = 'Itr = ' + temp + '\n'
+            Ipr = 'Ipr = ' + temp_p + '\n'
+            t.insert(INSERT, partit)
+            t.insert(c+2.0, Itr)
+            t.insert(c+4.0, Ipr)
+            c+=2
+    """
+    t.grid(column=0, row = 0)
     test.mainloop()
 
 class SeaOfBTCapp(tk.Tk):
@@ -223,8 +292,37 @@ class SeaOfBTCapp(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
-def sosi(p):
-    print(p.get().split(' '))
+def file(func):
+    if not func.get():
+       return messagebox.showerror("Ошибка", "Вы не выбрали функцию!")
+    messagebox.showinfo('Выбор файла', 'Файл должен быть с расширение .txt \nи иметь вид трёх колонок из цифр, разделённых запятой. \nПервая колонка воспринимается как количество разбиений, вторая как нижняя граница и третья как верхняя граница интегрирования')
+    fucc = func.get()
+    files = filedialog.askopenfilenames()
+    print(files)
+    file_name, file_ext= os.path.splitext(files[0])
+    print(file_ext)
+    print(type(files))
+    if file_ext == '.txt':
+      parts = ''
+      fl = open(files[0], 'r')
+      data = [line.split(',') for line in fl]
+      for i in range(1, len(data)):
+          if i != len(data)-1:
+              parts += data[i][0] + ', '
+          else:
+              parts += data[i][0]
+      partition.delete(0, END)
+      partition.insert(0, parts)
+      l = data[1][1]
+      u = data[1][2]
+      border_l.delete(0, END)
+      border_l.insert(0, l)
+      border_u.delete(0, END)
+      border_u.insert(0, u)
+    elif not file_ext:
+      return messagebox.showerror('Ошибка','Файл не выбран!')
+    else:
+      return messagebox.showerror('Ошибка','Неверный формат файла!')
     
 class StartPage(tk.Frame):
     
@@ -243,6 +341,9 @@ class StartPage(tk.Frame):
         label3.grid(column = 0, row = 6)
         label4 = ttk.Label(self, text="Введите количество разбиений через запятую:", font = LARGE_FONT)
         label4.grid(column = 0, row = 5)
+        global partition
+        global border_l
+        global border_u
         partition = Entry(self, width = 5,  bd = 3)
         partition.grid(column = 1, row = 5)
         border_l = Entry(self, width = 5, bd = 3)
@@ -250,9 +351,9 @@ class StartPage(tk.Frame):
         border_u = Entry(self, width = 5,  bd = 3)
         border_u.grid(column = 1, row = 7)
         tk.Button(self,text="Построить график",command= lambda: draw_chart(border_l, border_u, combo, partition)).grid(column=0, row=8)
-        enter1 = Button(self, text = 'Проверка', command = lambda: proverka(enter_clicked(border_l, border_u, combo, partition)))
+        enter1 = Button(self, text = 'Проверка', command = lambda: proverka(border_l, border_u, combo, partition))
         enter1.grid(column = 1, row = 8)
-        enter2 = Button(self, text = 'Проверка т', command = lambda: sosi(partition))
+        enter2 = Button(self, text = 'Ввод из файла', command = lambda: file(combo))
         enter2.grid(column = 1, row = 9)
         #graphic = Button(self, text = 'Построить график', command = lambda: Graphic(enter_clicked(border_l, border_u, combo))[5])
         #graphic.grid(column = 1, row = 10)
@@ -271,17 +372,17 @@ class PageOne(tk.Frame):
         btn2.pack()
 
 
+def sin_f(x):
+    return (x**2)*m.sin(5*x)
+def cos_f(x):
+    return (x**2)*m.cos(5*x)
 
 
 def draw_chart(border_l, border_u, func, parts):
-    n_1 = parts.get().split(',')
-    for i in range (0, len(n_1)):
-            if int(n_1[i]) < 1:
-                print(n_1[i],'\notsosi')
     try:
         n = parts.get().split(',')
-        l = int(border_l.get())
-        u = int(border_u.get())
+        l = float(border_l.get())
+        u = float(border_u.get())
         fuc = func.get()
         for i in range (0, len(n)):
             if int(n[i]) < 1:
@@ -298,6 +399,12 @@ def draw_chart(border_l, border_u, func, parts):
     if not func.get():
         messagebox.showerror("Ошибка", "Вы не выбрали функцию!")
         return
+    n_new = []
+    for i in range(0, len(n)):
+        n_new.append(int(n[i]))
+    n_new.sort()
+    print (n_new)
+    print(type(n_new[0]))
     root = Tk()
     root.title('График сходимости')
     root.geometry('800x600')
@@ -308,42 +415,61 @@ def draw_chart(border_l, border_u, func, parts):
     toolbar = NavigationToolbar2Tk(canvas, root)
     f_values=[]
     fig.clear()
+    Par_meth = []
+    Trap_meth = []
     for j in range (0, len(n)):
         Summ = 0
         Summ_par = 0
-        h=(u - l)/int(n[j])
+        h=(u - l)/n_new[j]
+        print(h)
         if fuc == 'x^2sin(5x)':
-            real = Decimal((2/125 - u**2/5)*cos(5*u) + 2/25*u*sin(5*u) - (2/125 - l**2/5)*cos(5*l) + 2/25*l*sin(5*l))
-            for i in range (0, int(n[j])):
+            real_real = integrate.quad(funnc, l, u)
+            for i in range (0, n_new[j]):
                 if i == 0:
-                    pair = [((l**2 * sin(l) + u**2 * sin(u))*h)/2, i]
-                    f_values.append(pair)
-                    Summ+=pair[0]
+                    pair = ((sin_f(l) + sin_f(u))*h)/2
+                    Summ+=pair
                 else:
-                    pair=[((l+i*h)**2 * sin(5*(l + i*h)))*h, i]        
-                    f_values.append(pair)
-                    Summ+=pair[0]
+                    pair=sin_f(l+(i*h))*h
+                    Summ+=pair
             
-            for i in range (0, int(n[j])):
+            for i in range (0, n_new[j]):
                 if i == 0:
-                    pair = [((l**2 * sin(l) + u**2 * sin(u))*h)/3, i]
-                    f_values.append(pair)
-                    Summ_par+=pair[0]
+                    pair = (sin_f(l) + sin_f(u))*h/3
+                    Summ_par+=pair
                 elif (i%2) == 1:
-                    pair=[((l+i*h)**2 * sin(5*(l + i*h)))*4*h/3, i]        
-                    f_values.append(pair)
-                    Summ_par+=pair[0]
+                    pair=sin_f(l+(i*h))*4*h/3
+                    Summ_par+=pair
                 elif (i%2) == 0:
-                    pair=[((l+i*h)**2 * sin(5*(l + i*h)))*2*h/3, i]        
-                    f_values.append(pair)
-                    Summ_par+=pair[0]
-        
-        t = np.linspace(0, int(n[j]),2)
-        y0 = float(real) + 0*t
-        string = 'ист. знач.=' + str(float(real.quantize(Decimal("1.00000"))))
-        fig.add_subplot(111).plot(t, y0, 'm--', label=string)
-        fig.add_subplot(111).plot(Summ, int(n[j]), 'gx', label = 'Метод трапеций', markersize = 8)
-        fig.add_subplot(111).plot(Summ_par, int(n[j]), 'ro', label = 'Метод парабол', markersize = 8)
+                    pair=sin_f(l+(i*h))*2*h/3       
+                    Summ_par+=pair
+        elif fuc == 'x^2cos(5x)':
+            real_real = integrate.quad(funncc, l, u)
+            for i in range (0, n_new[j]):
+                if i == 0:
+                    pair = ((cos_f(l) + cos_f(u))*h)/2
+                    Summ+=pair
+                else:
+                    pair=cos_f(l+(i*h))*h
+                    Summ+=pair
+            
+            for i in range (0, n_new[j]):
+                if i == 0:
+                    pair = (cos_f(l) + cos_f(u))*h/3
+                    Summ_par+=pair
+                elif (i%2) == 1:
+                    pair=cos_f(l+(i*h))*4*h/3
+                    Summ_par+=pair
+                elif (i%2) == 0:
+                    pair=cos_f(l+(i*h))*2*h/3       
+                    Summ_par+=pair
+        Par_meth.append(Summ_par)
+        Trap_meth.append(Summ)
+        t = np.linspace(0, n_new[j],2)        
+    y0 = float(real_real[0]) + 0*t
+    string = 'ист. знач.=' + str(float(round(real_real[0], 6)))
+    fig.add_subplot(111).plot(t, y0, 'm--', label=string)
+    fig.add_subplot(111).plot(n_new, Trap_meth, 'gx', label = 'Метод трапеций', markersize = 8)
+    fig.add_subplot(111).plot(n_new, Par_meth, 'ro', label = 'Метод парабол', markersize = 8)
     canvas.draw_idle()
     plt.xlabel('n')
     plt.ylabel('Значение I')
@@ -356,9 +482,6 @@ def draw_chart(border_l, border_u, func, parts):
     #generate random x/y
     #fig.add_subplot(a_ss)
     #fig.align_xlabels(axs = 'Участок разбиения n')
-    print(Summ)
-    print(Sum)
-    print(real)
     root.mainloop()
 
 app = SeaOfBTCapp()
