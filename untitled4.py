@@ -59,91 +59,10 @@ def Graphic():
     plt.legend()
  '''
        
-def enter_clicked(border_l, border_u, func, parts):
-    try:
-        n = int(parts.get())
-        l = int(border_l.get())
-        u = int(border_u.get())
-        fuc = func.get()
-        if n < 1:
-            raise  Exception
-    except ValueError:
-        messagebox.showerror('Ошибка','Неверный формат ввода!')
-        return
-    except Exception:
-        messagebox.showerror('Ошибка','Невозможное колиество разбиений!')
-        return
-    if not parts.get():
-        messagebox.showerror('Ошибка','Вы не ввели количество разбиений!')
-        return
-    if not func.get():
-        messagebox.showerror("Ошибка", "Вы не выбрали функцию!")
-        return
-    f_values=[]
-    f_par_values = []
-    Sum = []
-    Sum_par = []
-    Summ = 0
-    Summ_par = 0
-    bords = []
-    h=(u - l)/n
-    if fuc == 'sin(5x)':
-        real = Decimal((m.cos(5*u)/-5) + m.cos(5*l)/5)
-        for i in range (0, n):
-            if i == 0:
-                pair = [((m.sin(l) + m.sin(u))*h)/2, i]
-                f_values.append(pair)
-                Summ+=pair[0]
-            else:
-                pair=[(m.sin(5*(l + i*h)))*h, i]        
-                f_values.append(pair)
-                Summ+=pair[0]
-            Sum.append(Summ)
-        for i in range (0, n):
-            if i == 0:
-                pair = [((m.sin(l) + m.sin(u))*h)/3, i]
-                f_par_values.append(pair)
-                Summ_par+=pair[0]
-            elif (i%2) == 1:
-                pair=[(m.sin(5*(l + i*h)))*4*h/3, i]        
-                f_par_values.append(pair)
-                Summ_par+=pair[0]
-            elif (i%2) == 0:
-                pair=[(m.sin(5*(l + i*h)))*2*h/3, i]        
-                f_par_values.append(pair)
-                Summ_par+=pair[0]
-            Sum_par.append(Summ_par)
-    elif fuc == 'x^2':
-        real = Decimal(u**3/3 - l**3/3)
-        for i in range (0, n):
-            if i == 0:
-                pair = [((l**2 + u**2)*h)/2, i]
-                f_values.append(pair)
-                Summ+=pair[0]
-            else:
-                pair=[(l + i*h)**2 * h, i]        
-                f_values.append(pair)
-                Summ+=pair[0]
-            Sum.append(Summ)
-        for i in range (0, n):
-            if i == 0:
-                pair = [((l**2 + u**2)*h)/3, i]
-                f_par_values.append(pair)
-                Summ_par+=pair[0]
-            elif (i%2) == 1:
-                pair=[(l + i*h)**2*4*h/3, i]        
-                f_par_values.append(pair)
-                Summ_par+=pair[0]
-            elif (i%2) == 0:
-                pair=[(l + i*h)**2*2*h/3, i]        
-                f_par_values.append(pair)
-                Summ_par+=pair[0]
-            Sum_par.append(Summ_par)
-    bords=[Sum, Sum_par, real, fuc, l, u, f_values, f_par_values]
-    return bords
 
 def proverka(border_l, border_u, func, parts):
     test = Tk()
+    test.title("Проверка")
     try:
         n = parts.get().split(',')
         l = float(border_l.get())
@@ -246,25 +165,7 @@ def proverka(border_l, border_u, func, parts):
             t.insert(INSERT, partit)
             t.insert(c+2.0, Itr)
             t.insert(c+4.0, Ipar)
-            c+=2
-    """else:
-            partit = 'n = ' + str(n_new[i]) + '\n'
-            temp = ''
-            temp_p =''
-            for j in range (0, len(F_P[i])):
-                if j != len(F_P[i])-1:
-                    temp += str(round(F_T[i][j],4)) + ' + '
-                    temp_p += str(round(F_P[i][j],4)) + ' + '
-                else:
-                    temp+=str(round(F_T[i][j],4))
-                    temp_p+=str(round(F_P[i][j],4))
-            Itr = 'Itr = ' + temp + '\n'
-            Ipr = 'Ipr = ' + temp_p + '\n'
-            t.insert(INSERT, partit)
-            t.insert(c+2.0, Itr)
-            t.insert(c+4.0, Ipr)
-            c+=2
-    """
+  
     t.grid(column=0, row = 0)
     test.mainloop()
 
@@ -355,14 +256,7 @@ class StartPage(tk.Frame):
         enter1.grid(column = 1, row = 8)
         enter2 = Button(self, text = 'Ввод из файла', command = lambda: file(combo))
         enter2.grid(column = 1, row = 9)
-        #graphic = Button(self, text = 'Построить график', command = lambda: Graphic(enter_clicked(border_l, border_u, combo))[5])
-        #graphic.grid(column = 1, row = 10)
-        #btn1 = ttk.Button(self, text = 'Visit page 3', command = lambda:controller.show_frame(PageThree))
-        #btn1.grid(column = 0, row = 3)
-        #btn3 = ttk.Button(self, text = 'Visit page 1', command = lambda:controller.show_frame(PageOne))
-        #btn3.grid(column = 0, row = 4)
-        #btn4 = ttk.Button(self, text = 'Visit graph page', command = lambda:controller.show_frame(Graph_page))
-        #btn4.grid(column = 1, row = 11)       
+        
 class PageOne(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -477,19 +371,10 @@ def draw_chart(border_l, border_u, func, parts):
     plt.legend(loc='best')     
     plt.grid(True, color = 'black')
     plt.close(fig)                                                                
-    #fig.add_subplot(1,1,2, sharex = True, sharey = True)
-    #fig.add_subplot(1,1,3, sharex = True, sharey = True).plot(0.5, 14)
-    #generate random x/y
-    #fig.add_subplot(a_ss)
-    #fig.align_xlabels(axs = 'Участок разбиения n')
     root.mainloop()
 
 app = SeaOfBTCapp()
 app.title('Численное интегрирование') 
-#graph = Graph()
-#ani = animation.FuncAnimation(f, Graphic, interval = 1000)
-#graph.title('График сходимости методов')  
-#graph.mainloop()
-#app.bg("light-blue")
+
 app.mainloop()
 
